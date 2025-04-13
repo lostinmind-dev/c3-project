@@ -14,13 +14,17 @@ export abstract class C3App extends C3EventsHandler<RuntimeEventMap> {
 
     protected abstract beforeStart(): void;
     protected abstract onStart(): void;
+
+    addInstances<T extends Record<keyof IConstructProjectObjects, Function>>(instances: Partial<T>) {
+        for (const [objectName, klass] of Object.entries(instances)) {
+            //@ts-ignore
+            this.runtime.objects[objectName as keyof IConstructProjectObjects].setInstanceClass(klass);
+        }
+    }
+
+    addPromises(promises: Promise<void>[]) {
+        for (const promise of promises) {
+            this.runtime.sdk.addLoadPromise(promise);
+        }
+    }
 }
-
-type C3AppConstructor<T extends C3App = C3App> = new (...args: any[]) => T;
-
-export function config<T extends C3App>(app: C3AppConstructor<T>) {
-    return new Promise<T>((resolve, reject) => {
-        runOnStartup(runtime => resolve(new app(runtime)));
-    });
-}
-

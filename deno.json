@@ -1,0 +1,28 @@
+{
+    "name": "@lostinmind/c3-project",
+    "version": "1.0.0",
+    "compilerOptions": {
+        "types": [
+            "./types/runtime/"
+        ],
+        "lib": [
+            "deno.window",
+            "dom",
+            "deno.ns"
+        ]
+    },
+    "tasks": {
+        "test": "deno run -A test/main.ts",
+        "publish": "npx jsr publish"
+    },
+    "exports": {
+        ".": "./mod.ts",
+        "./helpers": "./helpers.ts"
+    },
+    "publish": {
+        "exclude": [
+            "types",
+            "test"
+        ]
+    }
+}

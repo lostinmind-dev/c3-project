@@ -1,0 +1,6 @@
+{
+    "imports": {
+        "@instances/": "./scripts/app/instances/",
+        "gsap": "npm:gsap@3.12.7"
+    }
+}

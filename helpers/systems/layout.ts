@@ -1,6 +1,4 @@
-
 import type { C3App } from "../c3App.ts";
-
 
 export abstract class Layout<
     Layers extends string[] = string[]
@@ -30,8 +28,6 @@ export abstract class Layout<
         return layers;
     }
 }
-
-export type ExtractLayouts<T> = T extends LayoutSystem<infer L> ? L : never;
 
 export class LayoutSystem<
     Layouts extends Record<string, Constructor<typeof Layout>>,

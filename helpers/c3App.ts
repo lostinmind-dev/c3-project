@@ -1,6 +1,5 @@
-import { C3EventsHandler } from "../utils.ts";
+import { C3EventsHandler } from "./eventsHandler.ts";
 import { 
-    type ExtractLayouts,
     type Layout,
     LayoutSystem, 
 } from "./systems/layout.ts";
@@ -18,15 +17,4 @@ export abstract class C3App<
         this.layout = new LayoutSystem(this, layouts);
     }
 }
-
-
-class App extends C3App<{}> {
-
-    constructor(runtime: IRuntime) {
-        super(runtime, {});
-
-        // this.on()
-    }
-}
-
 

@@ -1,6 +1,6 @@
 {
     "name": "@lostinmind/c3-project",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "compilerOptions": {
         "types": [
             "./types/runtime/"

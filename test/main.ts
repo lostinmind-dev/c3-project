@@ -1,4 +1,4 @@
-import { bundle } from '../mod.ts';
+import { bundle } from '@lostinmind/c3-project';
 
 await bundle('main.js', {
     compilerOptions: {

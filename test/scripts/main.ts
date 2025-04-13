@@ -1,27 +1,29 @@
-const test= ''
-import { gsap } from 'gsap';
-import { Instance } from '@instances/index.ts';
-// Import any other script files here, e.g.:
-// import * as myModule from "./mymodule.js";
+import { C3App, Misc } from '@lostinmind/c3-project/helpers';
 
-runOnStartup(async runtime => {
-	// console.log('tetwet')
-	console.log(Instance, 1, 2, test)
-	// console.log(te)
-	// Code to run on the loading screen.
-	// Note layouts, objects etc. are not yet available.
+export let app: App;
 
-	runtime.addEventListener('beforeprojectstart', () => OnBeforeProjectStart(runtime));
+runOnStartup(runtime => { 
+	app = new App(runtime)
 });
 
-async function OnBeforeProjectStart(runtime: IRuntime) {
-	// Code to run just before 'On start of layout' on
-	// the first layout. Loading has finished and initial
-	// instances are created and available to use here.
+class App extends C3App<{
 
-	runtime.addEventListener('tick', () => Tick(runtime));
-}
+}> {
 
-function Tick(runtime: IRuntime) {
-	// Code to run every tick
+	constructor(runtime: IRuntime) {
+		super(runtime, {});
+
+		this.on('beforeprojectstart', () => this.beforeStart());
+
+		Misc.global('app', this);
+		console.log('Initi')
+	}
+
+	private beforeStart() {
+		this.on('tick', () => this.tick());
+	}
+
+	private tick() {
+
+	}
 }

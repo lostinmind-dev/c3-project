@@ -12,7 +12,15 @@ export abstract class C3App extends C3EventsHandler<RuntimeEventMap> {
         this.on('afterprojectstart', (e) => this.onStart());
     }
 
-    abstract beforeStart(): void;
-    abstract onStart(): void;
+    protected abstract beforeStart(): void;
+    protected abstract onStart(): void;
+}
+
+type C3AppConstructor<T extends C3App = C3App> = new (...args: any[]) => T;
+
+export function config<T extends C3App>(app: C3AppConstructor<T>) {
+    return new Promise<T>((resolve, reject) => {
+        runOnStartup(runtime => resolve(new app(runtime)));
+    });
 }
 

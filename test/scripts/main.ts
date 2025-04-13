@@ -1,4 +1,4 @@
-import { C3App, Misc } from '@lostinmind/c3-project/helpers';
+import { C3App, Misc } from '@c3-project/helpers';
 
 export let app: App;
 

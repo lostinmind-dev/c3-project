@@ -7,16 +7,19 @@ runOnStartup(runtime => {
 });
 
 class App extends C3App<{
-
+	'Main': any;
 }> {
 
 	constructor(runtime: IRuntime) {
-		super(runtime, {});
+		super(runtime, {
+			'Main': { test: 1 }
+		});
 
 		this.on('beforeprojectstart', () => this.beforeStart());
 
 		Misc.global('app', this);
-		console.log('Initi')
+
+		this.layout.get('Main')
 	}
 
 	private beforeStart() {

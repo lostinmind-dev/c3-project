@@ -1,19 +1,29 @@
 import { C3EventsHandler } from "./eventsHandler.ts";
 
-
+type TickHandler = () => void
 export abstract class C3App extends C3EventsHandler<RuntimeEventMap> {
     readonly runtime: IRuntime;
+    private readonly tickHandlers = new Set<TickHandler>();
 
     constructor(runtime: IRuntime) {
         super(runtime);
         this.runtime = runtime;
 
-        this.on('beforeprojectstart', (e) => this.beforeStart());
-        this.on('afterprojectstart', (e) => this.onStart());
+        this.on('beforeprojectstart', () => this.beforeStart());
+        this.on('afterprojectstart', () => this.onStart());
+        this.on('tick', () => this.#onTick());
     }
 
     protected abstract beforeStart(): void;
     protected abstract onStart(): void;
+
+    onTick(handler: TickHandler) {
+        this.tickHandlers.add(handler);
+
+        return () => {
+            this.tickHandlers.delete(handler);
+        }
+    }
 
     addInstances<T extends Record<keyof IConstructProjectObjects, Function>>(instances: Partial<T>) {
         for (const [objectName, klass] of Object.entries(instances)) {
@@ -25,6 +35,12 @@ export abstract class C3App extends C3EventsHandler<RuntimeEventMap> {
     addPromises(promises: Promise<void>[]) {
         for (const promise of promises) {
             this.runtime.sdk.addLoadPromise(promise);
+        }
+    }
+
+    #onTick() {
+        for (const handler of this.tickHandlers) {
+            handler();
         }
     }
 }

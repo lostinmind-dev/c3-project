@@ -1,33 +1,94 @@
-import { Positions } from "./index.ts";
+import { C3EventsHandler } from "../eventsHandler.ts";
+import { Position } from "./position.ts";
 
-export class Touch {
-    readonly positions = new Positions();
+type TouchType = 'start' | 'end';
+type Handler = (e: ConstructPointerEvent) => void;
 
-    #touching: boolean = false;
+export class TouchSystem extends C3EventsHandler<RuntimeEventMap> {
+    private touching: boolean = false;
 
-    get touching() {
-        return this.#touching;
+    private readonly touchListeners = new Map<TouchType, Set<Handler>>();
+    private readonly moveHandlers = new Set<Handler>();
+
+    readonly start: Position = new Position(0, 0);
+    readonly current: Position = new Position(0, 0);
+    readonly previous: Position = new Position(0, 0);
+    readonly end: Position = new Position(0, 0);
+
+    constructor(runtime: IRuntime) {
+        super(runtime);
+
+        this.on('pointerdown', (e) => this.#onDown(e));
+        this.on('pointermove', (e) => this.#onMove(e));
+        this.on('pointerup', (e) => this.#onUp(e));
     }
 
-    onPointerDown(e: ConstructPointerEvent) {
-        this.positions.start.x = e.clientX;
-        this.positions.start.y = e.clientY;
+    onTouch(type: TouchType, handler: Handler) {
+        let handlers = this.touchListeners.get(type);
 
-        this.#touching = true;
+        if (!handlers) {
+            this.touchListeners.set(type, new Set());
+            handlers = this.touchListeners.get(type)!;
+        }
+
+        handlers.add(handler);
+
+        return () => {
+            handlers.delete(handler);
+        }
     }
 
-    onPointerMove(e: ConstructPointerEvent) {
-        this.positions.previous.x = this.positions.current.x;
-        this.positions.previous.y = this.positions.current.y;
+    onMove(handler: Handler) {
+        this.moveHandlers.add(handler);
 
-        this.positions.current.x = e.clientX;
-        this.positions.current.y = e.clientY;
-    } 
+        return () => {
+            this.moveHandlers.delete(handler);
+        }
+    }
 
-    onPointerUp(e: ConstructPointerEvent) {
-        this.positions.end.x = e.clientX;
-        this.positions.end.y = e.clientY;
+    isTouching() {
+        return this.touching;
+    }
 
-        this.#touching = false;
+    #onDown(e: ConstructPointerEvent) {
+        this.start.x = e.clientX;
+        this.start.y = e.clientY;
+
+        this.touching = true;
+
+        const handlers = this.touchListeners.get('start')
+
+        if (!handlers) return;
+
+        for (const handler of handlers) {
+            handler(e);
+        }
+    }
+
+    #onMove(e: ConstructPointerEvent) {
+        this.previous.x = this.current.x;
+        this.previous.y = this.current.y;
+
+        this.current.x = e.clientX;
+        this.current.y = e.clientY;
+
+        for (const handler of this.moveHandlers) {
+            handler(e);
+        }
+    }
+
+    #onUp(e: ConstructPointerEvent) {
+        this.end.x = e.clientX;
+        this.end.y = e.clientY;
+
+        this.touching = false;
+
+        const handlers = this.touchListeners.get('end')
+
+        if (!handlers) return;
+
+        for (const handler of handlers) {
+            handler(e);
+        }
     }
 }

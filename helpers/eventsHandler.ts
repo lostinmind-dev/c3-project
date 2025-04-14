@@ -1,30 +1,30 @@
 type Handler<Data = any> = (data: Data) => void;
 
 export class EventsHandler<Events extends Record<string, any>> {
-    protected readonly events = new Map<keyof Events, Set<Handler>>();
+    readonly #events = new Map<keyof Events, Set<Handler>>();
 
     public on<Event extends keyof Events>(event: Event, handler: Handler<Events[Event]>) {
-        let handlers = this.events.get(event);
+        let handlers = this.#events.get(event);
 
         if (!handlers) {
-            this.events.set(event, new Set([handler]));
-            handlers = this.events.get(event)!;
+            this.#events.set(event, new Set([handler]));
+            handlers = this.#events.get(event)!;
         }
 
         handlers.add(handler);
 
         return () => {
             handlers.delete(handler);
-            if (handlers.size === 0) this.events.delete(event);
+            if (handlers.size === 0) this.#events.delete(event);
         }
     }
 
     protected release() {
-        this.events.clear();
+        this.#events.clear();
     }
 
     protected emit<Event extends keyof Events>(event: Event, ...data: Events[Event] extends void ? [] : [Events[Event]]) {
-        const handlers = this.events.get(event);
+        const handlers = this.#events.get(event);
 
         if (!handlers) return;
 
@@ -37,39 +37,38 @@ export class EventsHandler<Events extends Record<string, any>> {
 export class C3EventsHandler<
     Events extends Record<string, any>,
     Object extends ConstructEventTarget<Events> = ConstructEventTarget<Events>
-> extends EventsHandler<Events> {
-    readonly #obj: Object;
+> {
+    readonly #ref: Object;
+    readonly #events = new Map<keyof Events, Set<Handler>>();
 
-    constructor(obj: Object) {
-        super();
-        this.#obj = obj;
+    constructor(ref: Object) {
+        this.#ref = ref;
     }
 
-    override on<Event extends keyof Events>(event: Event, handler: (data: Events[Event]) => void): () => void {
-        this.#obj.addEventListener(event, handler);
+    protected on<Event extends keyof Events>(event: Event, handler: (data: Events[Event]) => void): () => void {
+        this.#ref.addEventListener(event, handler);
 
-        let handlers = this.events.get(event);
+        let handlers = this.#events.get(event);
 
         if (!handlers) {
-            this.events.set(event, new Set([handler]));
-            handlers = this.events.get(event)!;
+            this.#events.set(event, new Set([handler]));
+            handlers = this.#events.get(event)!;
         }
 
         handlers.add(handler);
 
         return () => {
-            this.#obj.removeEventListener(event, handler);
+            this.#ref.removeEventListener(event, handler);
             handlers.delete(handler);
-            if (handlers.size === 0) this.events.delete(event);
+            if (handlers.size === 0) this.#events.delete(event);
         }
     }
 
-    protected override release(): void {
-        for (const [event, handlers] of this.events) {
+    protected release(): void {
+        for (const [event, handlers] of this.#events) {
             for (const handler of handlers) {
-                this.#obj.removeEventListener(event, handler);
+                this.#ref.removeEventListener(event, handler);
             }
         }
-        super.release();
     }
 }

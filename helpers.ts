@@ -4,8 +4,9 @@ export {
 } from './helpers/eventsHandler.ts';
 export { C3App } from './helpers/c3App.ts';
 
-export * from './helpers/input/keyboard.d.ts';
-export * from './helpers/input/mouse.d.ts';
-export { InputSystem } from './helpers/input/index.ts';
+
+export { KeyboardSystem } from './helpers/input/keyboard.ts';
+export { MouseSystem } from './helpers/input/mouse.ts';
+export { TouchSystem } from './helpers/input/touch.ts';
 
 export { misc } from './helpers/misc.ts';

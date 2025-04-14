@@ -18,6 +18,7 @@ export const buttons = {
 type ButtonIndex = typeof buttons[keyof typeof buttons];
 
 export class MouseSystem extends C3EventsHandler<RuntimeEventMap> {
+    private readonly moveHandlers = new Set<Handler>();
     private readonly pressListeners = new Map<number, Set<Handler>>();
     private readonly releaseListeneres = new Map<number, Set<Handler>>();
     private readonly wheelListeners = new Map<WheelDirection, Set<Handler>>();
@@ -38,6 +39,14 @@ export class MouseSystem extends C3EventsHandler<RuntimeEventMap> {
         this.on('mouseup', (e) => this.#onUp(e));
         this.on('wheel', (e) => this.#onWheel(e));
         this.on('tick', () => this.#update());
+    }
+
+    onMove(handler: Handler) {
+        this.moveHandlers.add(handler);
+
+        return () => {
+            this.moveHandlers.delete(handler);
+        }
     }
 
     onButtonPressed(button: keyof typeof buttons, handler: Handler) {
@@ -130,6 +139,10 @@ export class MouseSystem extends C3EventsHandler<RuntimeEventMap> {
 
         this.current.x = e.clientX;
         this.current.y = e.clientY;
+
+        for (const handler of this.moveHandlers) {
+            handler(e);
+        }
     }
 
     #onUp(e: MouseEvent) {

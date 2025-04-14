@@ -61,7 +61,7 @@ type Keys = {
     [Key in `Page${'Up' | 'Down'}`]: never;
 }
 
-type Key = keyof Keys | `Key${Uppercase<Chars[number]>}`;
+export type Key = keyof Keys | `Key${Uppercase<Chars[number]>}`;
 
 export class KeyboardSystem extends C3EventsHandler<RuntimeEventMap> {
     private readonly pressListeners = new Map<string, Set<Handler>>();

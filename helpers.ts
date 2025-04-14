@@ -5,7 +5,10 @@ export {
 export { C3App } from './helpers/c3App.ts';
 
 
-export { KeyboardSystem } from './helpers/input/keyboard.ts';
+export { 
+    type Key,
+    KeyboardSystem, 
+} from './helpers/input/keyboard.ts';
 export { MouseSystem } from './helpers/input/mouse.ts';
 export { TouchSystem } from './helpers/input/touch.ts';
 

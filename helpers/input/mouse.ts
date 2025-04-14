@@ -15,12 +15,10 @@ export const buttons = {
     fifth: 4,
 } as const;
 
-type ButtonIndex = typeof buttons[keyof typeof buttons];
-
 export class MouseSystem extends C3EventsHandler<RuntimeEventMap> {
     private readonly moveHandlers = new Set<Handler>();
-    private readonly pressListeners = new Map<number, Set<Handler>>();
-    private readonly releaseListeneres = new Map<number, Set<Handler>>();
+    private readonly pressListeners = new Map<number | 'any', Set<Handler>>();
+    private readonly releaseListeneres = new Map<number | 'any', Set<Handler>>();
     private readonly wheelListeners = new Map<WheelDirection, Set<Handler>>();
 
     private readonly buttons = new Map<number, ButtonState>();
@@ -49,12 +47,14 @@ export class MouseSystem extends C3EventsHandler<RuntimeEventMap> {
         }
     }
 
-    onButtonPressed(button: keyof typeof buttons, handler: Handler) {
-        let handlers = this.pressListeners.get(buttons[button]);
+    onButtonPressed(button: keyof typeof buttons | 'any', handler: Handler) {
+        const key = (button === 'any') ? 'any' : buttons[button];
+
+        let handlers = this.pressListeners.get(key);
 
         if (!handlers) {
-            this.pressListeners.set(buttons[button], new Set());
-            handlers = this.pressListeners.get(buttons[button])!;
+            this.pressListeners.set(key, new Set());
+            handlers = this.pressListeners.get(key)!;
         }
 
         handlers.add(handler);
@@ -64,12 +64,14 @@ export class MouseSystem extends C3EventsHandler<RuntimeEventMap> {
         }
     }
 
-    onButtonReleased(button: keyof typeof buttons, handler: Handler) {
-        let handlers = this.releaseListeneres.get(buttons[button]);
+    onButtonReleased(button: keyof typeof buttons | 'any', handler: Handler) {
+        const key = (button === 'any') ? 'any' : buttons[button];
+
+        let handlers = this.releaseListeneres.get(key);
 
         if (!handlers) {
-            this.releaseListeneres.set(buttons[button], new Set());
-            handlers = this.releaseListeneres.get(buttons[button])!;
+            this.releaseListeneres.set(key, new Set());
+            handlers = this.releaseListeneres.get(key)!;
         }
 
         handlers.add(handler);
@@ -94,12 +96,12 @@ export class MouseSystem extends C3EventsHandler<RuntimeEventMap> {
         }
     }
 
-    isButtonPressed(button: ButtonIndex) {
-        return this.buttons.get(button) === 'pressed';
+    isButtonPressed(button: keyof typeof buttons) {
+        return this.buttons.get(buttons[button]) === 'pressed';
     }
 
-    isButtonReleased(button: ButtonIndex) {
-        return this.buttons.get(button) === 'up'
+    isButtonReleased(button: keyof typeof buttons) {
+        return this.buttons.get(buttons[button]) === 'up'
     }
 
     #onWheel(e: WheelEvent) {
@@ -123,12 +125,21 @@ export class MouseSystem extends C3EventsHandler<RuntimeEventMap> {
         if (previousState !== 'down') {
             this.buttons.set(e.button, 'down');
 
-            const handlers = this.pressListeners.get(e.button)
 
-            if (!handlers) return;
+            const handlers = this.pressListeners.get(e.button);
 
-            for (const handler of handlers) {
-                handler(e);
+            if (handlers) {
+                for (const handler of handlers) {
+                    handler(e);
+                }
+            }
+
+            const anyHandlers = this.pressListeners.get('any');
+
+            if (anyHandlers) {
+                for (const handler of anyHandlers) {
+                    handler(e);
+                }
             }
         }
     }
@@ -153,10 +164,18 @@ export class MouseSystem extends C3EventsHandler<RuntimeEventMap> {
 
         const handlers = this.releaseListeneres.get(e.button)
 
-        if (!handlers) return;
+        if (handlers) {
+            for (const handler of handlers) {
+                handler(e);
+            }
+        }
 
-        for (const handler of handlers) {
-            handler(e);
+        const anyHandlers = this.releaseListeneres.get('any');
+
+        if (anyHandlers) {
+            for (const handler of anyHandlers) {
+                handler(e);
+            }
         }
     }
 

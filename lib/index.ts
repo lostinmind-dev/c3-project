@@ -1,8 +1,11 @@
 import { 
+    Logger,
     path,
     bundler,
-    logger
+    esbuild,
 } from "./deps.ts";
+
+const logger = new Logger();
 
 function readProjectData() {
     return new Promise<void>((resolve, reject) => {
@@ -59,11 +62,31 @@ let startTime: number
 let endTime: number;
 let count = 0;
 
-export async function bundle(name: `${string}.js`, opts: bundler.BundleOptions, watch?: boolean) {
+type Options = {
+    /** 
+     * Main entry file name
+     * @example 'main.ts'
+     */
+    readonly root: `${string}.ts`;
+    /** Bundler options */
+    readonly opts?: bundler.BundleOptions;
+    /** Terser minifier options */
+    readonly esbuild?: esbuild.BuildOptions;
+    /** Activate watcher? */
+    readonly watch?: true;
+}
+
+async function saveFile(path: string, data: string) {
+    await Deno.writeTextFile(path, data);
+}
+
+export async function bundle(options: Options) {
+    const { root, opts, watch } = options;
+
     try {
         const start = async () => {
             if (count > 0) console.log('\n');
-            
+
             bundling = true;
             startTime = performance.now();
             logger.debug('Starting bundling...');
@@ -75,16 +98,36 @@ export async function bundle(name: `${string}.js`, opts: bundler.BundleOptions, 
 
             const importMap = await readDenoJson();
 
-            const result = await bundler.bundle(path.join(Deno.cwd(), 'scripts', name.replace('.js', '.ts')), {
+            const result = await bundler.bundle(path.join(Deno.cwd(), 'scripts', root), {
+                ...opts,
+
                 importMap,
-                ...opts
+                compilerOptions: {
+                    ...opts?.compilerOptions,
+                    inlineSourceMap: false,
+                    sourceMap: false
+                },
+                minify: false,
+                type: 'module'
             });
 
-            await Deno.writeTextFile(path.join(Deno.cwd(), 'project', 'scripts', name), result.code);
+            await saveFile(
+                path.join(Deno.cwd(), 'project', 'scripts', root.replace('.ts', '.js')),
+                result.code
+            );
 
-            if (result.map) {
-                await Deno.writeTextFile(path.join(Deno.cwd(), 'project', 'scripts', `${name}.map`), result.map);
-            }
+            await esbuild.build({
+                target: ['es2021'],
+                format: 'esm',
+
+                ...options.esbuild,
+                
+                entryPoints: [path.join(Deno.cwd(), 'project', 'scripts', root.replace('.ts', '.js'))],
+                outfile: path.join(Deno.cwd(), 'project', 'scripts', root.replace('.ts', '.js')),
+                bundle: true,
+                platform: 'browser',
+                allowOverwrite: true,
+            }).then(() => esbuild.stop());
 
             count++;
             endTime = performance.now();
@@ -94,7 +137,7 @@ export async function bundle(name: `${string}.js`, opts: bundler.BundleOptions, 
 
         await start();
 
-        if (watch === true) {
+        if (watch) {
             const watcher = Deno.watchFs(path.join(Deno.cwd(), 'scripts'));
 
             for await (const event of watcher) {
@@ -108,6 +151,6 @@ export async function bundle(name: `${string}.js`, opts: bundler.BundleOptions, 
             }
         }
     } catch (e) {
-        throw new Error(`Error while building ${e}`, {  });
+        throw new Error(`Error while building ${e}`);
     }
 }

@@ -1,8 +1,18 @@
-import { bundle } from '@c3-project';
+import { bundle } from '../mod.ts';
 
-await bundle('main.js', {
-    compilerOptions: {
-        inlineSourceMap: true,
+await bundle({
+    watch: true,
+    
+    root: 'main.ts',
+    opts: {
+        compilerOptions: {
+            inlineSourceMap: true,
+        },
     },
-    minify: false,
-}, true);
+    esbuild: {
+        minify: true,
+        treeShaking: true,
+        logLevel: 'info',
+        sourcemap: 'inline',
+    }
+})

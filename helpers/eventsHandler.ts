@@ -36,12 +36,12 @@ export class EventsHandler<Events extends Record<string, any>> {
 
 export class C3EventsHandler<
     Events extends Record<string, any>,
-    Object extends ConstructEventTarget<Events> = ConstructEventTarget<Events>
+    Ref extends ConstructEventTarget<Events> = ConstructEventTarget<Events>
 > {
-    readonly #ref: Object;
+    readonly #ref: Ref;
     readonly #events = new Map<keyof Events, Set<Handler>>();
 
-    constructor(ref: Object) {
+    constructor(ref: Ref) {
         this.#ref = ref;
     }
 

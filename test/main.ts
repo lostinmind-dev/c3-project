@@ -4,7 +4,7 @@ await bundle({
     watch: true,
     
     root: 'main.ts',
-    opts: {
+    bundler: {
         compilerOptions: {
             inlineSourceMap: true,
         },

@@ -1,4 +1,4 @@
-import { C3EventsHandler } from "../eventsHandler.ts";
+import { C3EventsHandler } from "../../eventsHandler.ts";
 import { Position } from "./position.ts";
 
 type ButtonState = 'up' | 'down' | 'pressed';

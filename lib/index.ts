@@ -69,7 +69,7 @@ type Options = {
      */
     readonly root: `${string}.ts`;
     /** Bundler options */
-    readonly opts?: bundler.BundleOptions;
+    readonly bundler?: bundler.BundleOptions;
     /** Terser minifier options */
     readonly esbuild?: esbuild.BuildOptions;
     /** Activate watcher? */
@@ -81,7 +81,7 @@ async function saveFile(path: string, data: string) {
 }
 
 export async function bundle(options: Options) {
-    const { root, opts, watch } = options;
+    const { root, watch } = options;
 
     try {
         const start = async () => {
@@ -99,11 +99,11 @@ export async function bundle(options: Options) {
             const importMap = await readDenoJson();
 
             const result = await bundler.bundle(path.join(Deno.cwd(), 'scripts', root), {
-                ...opts,
+                ...options.bundler,
 
                 importMap,
                 compilerOptions: {
-                    ...opts?.compilerOptions,
+                    ...options.bundler?.compilerOptions,
                     inlineSourceMap: false,
                     sourceMap: false
                 },

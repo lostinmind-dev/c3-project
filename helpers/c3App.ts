@@ -1,9 +1,10 @@
 import { C3EventsHandler } from "./eventsHandler.ts";
 
-type TickHandler = () => void
+type TickHandler = () => void;
+
 export abstract class C3App extends C3EventsHandler<RuntimeEventMap> {
     readonly runtime: IRuntime;
-    private readonly tickHandlers = new Set<TickHandler>();
+    readonly #tickHandlers = new Set<TickHandler>();
 
     constructor(runtime: IRuntime) {
         super(runtime);
@@ -14,14 +15,11 @@ export abstract class C3App extends C3EventsHandler<RuntimeEventMap> {
         this.on('tick', () => this.#onTick());
     }
 
-    protected abstract beforeStart(): void;
-    protected abstract onStart(): void;
-
     onTick(handler: TickHandler) {
-        this.tickHandlers.add(handler);
+        this.#tickHandlers.add(handler);
 
         return () => {
-            this.tickHandlers.delete(handler);
+            this.#tickHandlers.delete(handler);
         }
     }
 
@@ -39,8 +37,11 @@ export abstract class C3App extends C3EventsHandler<RuntimeEventMap> {
     }
 
     #onTick() {
-        for (const handler of this.tickHandlers) {
+        for (const handler of this.#tickHandlers) {
             handler();
         }
     }
+
+    protected abstract beforeStart(): void;
+    protected abstract onStart(): void;
 }

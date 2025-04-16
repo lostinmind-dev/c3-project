@@ -1,4 +1,4 @@
-import { C3EventsHandler } from "../eventsHandler.ts";
+import { C3EventsHandler } from "../../eventsHandler.ts";
 
 type KeyState = 'up' | 'down' | 'pressed';
 type Handler = (e: KeyboardEvent) => void;

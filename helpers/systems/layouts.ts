@@ -9,7 +9,11 @@ export abstract class Container<
         return this.#root;
     }
 
-    constructor(root: RootInstance, instances?: Instances) {
+    constructor(root?: RootInstance, instances?: Instances) {
+        if (!root) {
+            throw new Error(`Root instance was not provided for container [${Container.name}]`)
+        };
+
         this.#root = root;
 
         if (instances) {
@@ -31,13 +35,10 @@ export abstract class Container<
     abstract release(): void;
 }
 
-export abstract class Layout<
-    Layers extends string[],
-    Containers extends Record<string, Constructor<typeof Container>>
-> {
+export abstract class Layout<Layers extends string[]> {
     readonly #_: ILayout;
     readonly #containers = new Map<string, InstanceType<typeof Container>>();
-    protected abstract readonly containers: Containers;
+    abstract readonly containers: Record<string, Constructor<typeof Container>>;
 
     get name() {
         return this.#_.name;
@@ -61,12 +62,8 @@ export abstract class Layout<
         });
     }
 
-    getContainer<Id extends string & keyof Containers>(id: Id) {
-        return this.#containers.get(id)! as InstanceType<Containers[Id]>
-    }
-
-    getLayer<Name extends Layers[number]>(name: Name) {
-        return this.#_!.getLayer(name)!;
+    getContainer<Id extends string & keyof typeof this['containers']>(id: Id) {
+        return this.#containers.get(id)! as InstanceType<this['containers'][Id]>
     }
 
     getLayers<Name extends Layers[number]>(...names: Name[]) {

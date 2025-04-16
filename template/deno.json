@@ -1,0 +1,11 @@
+{
+    "tasks": {
+        "dev": "deno run -A main.ts"
+    },
+    "imports": {
+                ".": "./scripts/main.ts",
+                "@app/": "./scripts/app/",
+                "@c3-project": "jsr:@lostinmind/c3-project@^1.2.3",
+                "@c3-project/helpers": "https://raw.githubusercontent.com/lostinmind-dev/c3-project/refs/heads/1.2.3/helpers.ts"
+    }
+}

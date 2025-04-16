@@ -13,7 +13,7 @@
     },
     "tasks": {
         "test": "deno run -A test/main.ts",
-        "publish": "npx jsr publish --allow-slow-types"
+        "publish": "npx jsr publish --allow-slow-types --no-check --allow-dirty"
     },
     "exports": {
         ".": "./mod.ts",
@@ -22,7 +22,8 @@
     "publish": {
         "exclude": [
             "types",
-            "test"
+            "test",
+            "template"
         ]
     }
 }

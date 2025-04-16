@@ -1,4 +1,4 @@
-**Deno library for easy TS scripting with Construct 3**
+**Deno library and C3 project template for easy TS scripting with Construct 3**
 
 __Construct 3 [R434] beta__
 
